@@ -107,6 +107,8 @@ require("lazy").setup(
     },
     { "jiangmiao/auto-pairs" },
     { "tpope/vim-surround" },
+    { "Civitasv/cmake-tools.nvim" },
+    { "rcarriga/nvim-notify" },
   }
 )
 
@@ -118,7 +120,10 @@ require("neotest").setup({
 })
 
 require("nvim-tree").setup({
-  update_focused_file = { enable = true }
+  update_focused_file = { enable = true },
+  view = {
+    preserve_window_proportions = true,
+  },
 })
 
 local cmp = require('cmp')
@@ -165,6 +170,10 @@ require('lspconfig').tsserver.setup({
   end
 })
 
+require("cmake-tools").setup({
+  cmake_build_directory = "build/${variant:buildType}",
+})
+
 vim.cmd.colorscheme('rose-pine-moon')
 
 -- general
@@ -184,3 +193,11 @@ vim.keymap.set('n', '<leader>fm', ':GFiles?<cr>')
 vim.keymap.set('n', '<leader>fb', ':Buffers<cr>')
 vim.keymap.set('n', '<leader>fr', ':Rg<cr>')
 
+-- cmake-tools
+vim.keymap.set('n', '<leader>cb', ':CMakeBuild<cr>')
+vim.keymap.set('n', '<leader>cB', ':CMakeBuild!<cr>')
+vim.keymap.set('n', '<leader>cc', ':CMakeClean<cr>')
+vim.keymap.set('n', '<leader>cg', ':CMakeGenerate<cr>')
+vim.keymap.set('n', '<leader>cG', ':CMakeGenerate!<cr>')
+vim.keymap.set('n', '<leader>cr', ':CMakeRun<cr>')
+vim.keymap.set('n', '<leader>ct', ':CMakeSelectBuildType<cr>')
