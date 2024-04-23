@@ -108,13 +108,20 @@ require("lazy").setup(
     { "jiangmiao/auto-pairs" },
     { "tpope/vim-surround" },
     { "Civitasv/cmake-tools.nvim" },
-    { "rcarriga/nvim-notify" },
+    { "rcarriga/nvim-notify" }, -- used by cmake-tools
+    { 
+      "nvim-lualine/lualine.nvim",
+      dependencies = { "nvim-tree/nvim-web-devicons" }
+    },
   }
 )
 
 require("neotest").setup({
   adapters = {
     require("neotest-gtest").setup({
+      filter_dir = function(name, rel_path, root)
+        return name ~= "extern" and name ~= "build"
+      end,
     }),
   },
 })
@@ -174,6 +181,8 @@ require("cmake-tools").setup({
   cmake_build_directory = "build/${variant:buildType}",
 })
 
+require("lualine").setup()
+
 vim.cmd.colorscheme('rose-pine-moon')
 
 -- general
@@ -187,11 +196,11 @@ vim.keymap.set('n', '<leader>tc', function() require("neotest").summary.toggle()
 vim.keymap.set('n', '<leader>tr', function() require("neotest").run.run(vim.fn.getcwd()) end)
 
 -- fzf
-vim.keymap.set('n', '<leader>ff', ':Files<cr>')
-vim.keymap.set('n', '<leader>fg', ':GFiles<cr>')
+vim.keymap.set('n', '<leader>fa', ':Files<cr>')
+vim.keymap.set('n', '<leader>ff', ':GFiles<cr>')
 vim.keymap.set('n', '<leader>fm', ':GFiles?<cr>')
 vim.keymap.set('n', '<leader>fb', ':Buffers<cr>')
-vim.keymap.set('n', '<leader>fr', ':Rg<cr>')
+vim.keymap.set('n', '<leader>fg', ':Rg<cr>')
 
 -- cmake-tools
 vim.keymap.set('n', '<leader>cb', ':CMakeBuild<cr>')
