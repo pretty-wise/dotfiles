@@ -120,6 +120,8 @@ require("lazy").setup(
     },
     { "mfussenegger/nvim-dap" },
     { "rcarriga/nvim-dap-ui", dependencies = {"mfussenegger/nvim-dap", "nvim-neotest/nvim-nio"} },
+    { "lewis6991/gitsigns.nvim" },
+    { "folke/which-key.nvim" },
   }
 )
 
@@ -178,13 +180,13 @@ require('lspconfig').clangd.setup({
     -- trouble
     require("workspace-diagnostics").populate_workspace_diagnostics(client, bufnr)
     -- lsp
-    vim.keymap.set('n', 'gd', '<cmd>lua vim.lsp.buf.definition()<cr>')
-    vim.keymap.set('n', 'gD', '<cmd>lua vim.lsp.buf.declaration()<cr>')
-    vim.keymap.set('n', '[d', '<cmd>lua vim.lsp.diagnostic.goto_prev()<cr>')
-    vim.keymap.set('n', ']d', '<cmd>lua vim.lsp.diagnostic.goto_next()<cr>')
-    vim.keymap.set('n', '<leader>rn', '<cmd>lua vim.lsp.buf.rename()<cr>')
-    vim.keymap.set('n', '<leader>ca', '<cmd>lua vim.lsp.buf.code_action()<cr>')
-    vim.keymap.set('n', '<leader>f', '<cmd>vim.lsp.buf.format<cr>')
+    vim.keymap.set('n', 'gd', vim.lsp.buf.definition, { desc = 'Go to definition' })
+    vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, { desc = 'Go to declaration' })
+    vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Diagnostics - previous' })
+    vim.keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = 'Diagnostics - next' })
+    vim.keymap.set('n', '<leader>rn', vim.lsp.buf.rename, { desc = 'Rename in buffer' })
+    vim.keymap.set('n', '<leader>ca', vim.lsp.buf.code_action, { desc = 'Buffer code action' })
+    vim.keymap.set('n', '<leader>f', vim.lsp.buf.format, { desc = 'Format buffer' })
   end
 })
 
@@ -208,6 +210,55 @@ require("cmake-tools").setup({
 })
 
 require("lualine").setup()
+
+require("which-key").setup()
+
+require('gitsigns').setup{
+  on_attach = function(bufnr)
+    local gitsigns = require('gitsigns')
+
+    local function map(mode, l, r, opts)
+      opts = opts or {}
+      opts.buffer = bufnr
+      vim.keymap.set(mode, l, r, opts)
+    end
+
+    -- Navigation
+    map('n', ']c', function()
+      if vim.wo.diff then
+        vim.cmd.normal({']c', bang = true})
+      else
+        gitsigns.nav_hunk('next')
+      end
+    end)
+
+    map('n', '[c', function()
+      if vim.wo.diff then
+        vim.cmd.normal({'[c', bang = true})
+      else
+        gitsigns.nav_hunk('prev')
+      end
+    end)
+
+    -- Actions
+    map('n', '<leader>hs', gitsigns.stage_hunk, { desc = 'Git - stage hunk' })
+    map('n', '<leader>hr', gitsigns.reset_hunk, { desc = 'Git - reset hunk' })
+    map('v', '<leader>hs', function() gitsigns.stage_hunk {vim.fn.line('.'), vim.fn.line('v')} end, { desc = 'Git - stage hunk' })
+    map('v', '<leader>hr', function() gitsigns.reset_hunk {vim.fn.line('.'), vim.fn.line('v')} end, { desc = 'Git - reset hunk' })
+    map('n', '<leader>hS', gitsigns.stage_buffer, { desc = 'Git - stage buffer' })
+    map('n', '<leader>hu', gitsigns.undo_stage_hunk, { desc = 'Git - undo stage hunk' })
+    map('n', '<leader>hR', gitsigns.reset_buffer, { desc = 'Git - reset buffer' })
+    map('n', '<leader>hp', gitsigns.preview_hunk, { desc = 'Git - preview hunk' })
+    map('n', '<leader>hb', function() gitsigns.blame_line{full=true} end, { desc =  'Git - blame line' })
+    map('n', '<leader>tb', gitsigns.toggle_current_line_blame, { desc = 'Git - toggle current line blame' })
+    map('n', '<leader>hd', gitsigns.diffthis, { desc = 'Git - diff against index' })
+    map('n', '<leader>hD', function() gitsigns.diffthis('~') end, { desc = 'Git - diff against last commit' })
+    map('n', '<leader>td', gitsigns.toggle_deleted)
+
+    -- Text object
+    map({'o', 'x'}, 'ih', ':<C-U>Gitsigns select_hunk<CR>')
+  end
+}
 
 local dap = require("dap")
 local dapui = require("dapui")
@@ -278,6 +329,9 @@ vim.keymap.set('n', 'n', 'nzz')
 vim.keymap.set('n', 'N', 'Nzz')
 vim.keymap.set('n', 'H', '0')
 vim.keymap.set('n', 'L', '$')
+
+-- nvim-tree
+vim.keymap.set('n', '<leader>ee', ':NvimTreeToggle<cr>')
 
 -- neotest
 vim.keymap.set('n', '<leader>tc', function() require("neotest").summary.toggle() end)
