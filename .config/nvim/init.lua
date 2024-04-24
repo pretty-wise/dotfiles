@@ -34,7 +34,7 @@ vim.opt.hlsearch = false
 vim.opt.incsearch = true
 vim.opt.termguicolors = true
 vim.opt.scrolloff = 8
-vim.opt.colorcolumn = "80"
+-- vim.opt.colorcolumn = "80"
 
 require("lazy").setup(
   {
@@ -175,6 +175,8 @@ cmp.setup({
 require('lspconfig').clangd.setup({
   capabilities = require('cmp_nvim_lsp').default_capabilities(),
   on_attach = function(client, bufnr)
+    -- trouble
+    require("workspace-diagnostics").populate_workspace_diagnostics(client, bufnr)
     -- lsp
     vim.keymap.set('n', 'gd', '<cmd>lua vim.lsp.buf.definition()<cr>')
     vim.keymap.set('n', 'gD', '<cmd>lua vim.lsp.buf.declaration()<cr>')
@@ -186,10 +188,11 @@ require('lspconfig').clangd.setup({
   end
 })
 
-require('lspconfig').tsserver.setup({
-  on_attach = function(client, bufnr)
-    require("workspace-diagnostics").populate_workspace_diagnostics(client, bufnr)
-  end
+vim.api.nvim_create_autocmd("BufWritePre", {
+  pattern = {"*.c", "*.cpp", "*.cc"},
+  callback = function()
+    vim.lsp.buf.format()
+  end,
 })
 
 require("cmake-tools").setup({
@@ -291,6 +294,7 @@ vim.keymap.set('n', '<leader>fg', ':Rg<cr>')
 vim.keymap.set('n', '<leader>cb', ':CMakeBuild<cr>')
 vim.keymap.set('n', '<leader>cB', ':CMakeBuild!<cr>')
 vim.keymap.set('n', '<leader>cc', ':CMakeClean<cr>')
+vim.keymap.set('n', '<leader>cd', ':CMakeDebug<cr>')
 vim.keymap.set('n', '<leader>cg', ':CMakeGenerate<cr>')
 vim.keymap.set('n', '<leader>cG', ':CMakeGenerate!<cr>')
 vim.keymap.set('n', '<leader>cr', ':CMakeRun<cr>')
