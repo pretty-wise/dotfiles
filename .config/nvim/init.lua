@@ -207,6 +207,12 @@ require("cmake-tools").setup({
     runInTerminal = true,
     console = 'integratedTerminal',
   },
+  cmake_executor = {
+    name = 'terminal',
+  },
+  cmake_runner = {
+    name = 'terminal',
+  }
 })
 
 require("lualine").setup()
@@ -250,10 +256,10 @@ require('gitsigns').setup{
     map('n', '<leader>hR', gitsigns.reset_buffer, { desc = 'Git - reset buffer' })
     map('n', '<leader>hp', gitsigns.preview_hunk, { desc = 'Git - preview hunk' })
     map('n', '<leader>hb', function() gitsigns.blame_line{full=true} end, { desc =  'Git - blame line' })
-    map('n', '<leader>tb', gitsigns.toggle_current_line_blame, { desc = 'Git - toggle current line blame' })
+    map('n', '<leader>htb', gitsigns.toggle_current_line_blame, { desc = 'Git - toggle current line blame' })
     map('n', '<leader>hd', gitsigns.diffthis, { desc = 'Git - diff against index' })
     map('n', '<leader>hD', function() gitsigns.diffthis('~') end, { desc = 'Git - diff against last commit' })
-    map('n', '<leader>td', gitsigns.toggle_deleted)
+    map('n', '<leader>htd', gitsigns.toggle_deleted)
 
     -- Text object
     map({'o', 'x'}, 'ih', ':<C-U>Gitsigns select_hunk<CR>')
@@ -279,7 +285,7 @@ dap.configurations.cpp = {
     cwd = '${workspaceFolder}',
     stopOnEntry = true,
     args = {},
-    -- runInTerminal = true,
+    runInTerminal = true,
     env = function()
       local variables = {}
       for k, v in pairs(vim.fn.environ()) do
@@ -334,37 +340,46 @@ vim.keymap.set('n', 'L', '$')
 vim.keymap.set('n', '<leader>ee', ':NvimTreeToggle<cr>')
 
 -- neotest
-vim.keymap.set('n', '<leader>tc', function() require("neotest").summary.toggle() end)
-vim.keymap.set('n', '<leader>tr', function() require("neotest").run.run(vim.fn.getcwd()) end)
+vim.keymap.set('n', '<leader>tc', function() require("neotest").summary.toggle() end, { desc = 'Test - Toggle Test Panel' })
+vim.keymap.set('n', '<leader>tr', function() require("neotest").run.run(vim.fn.getcwd()) end, { desc = 'Test - Run All Tests' })
+vim.keymap.set('n', '<leader>td', function() require("neotest").run.run({strategy = "dap"}) end, { desc = 'Test - Debug Current' })
 
 -- fzf
-vim.keymap.set('n', '<leader>fa', ':Files<cr>')
-vim.keymap.set('n', '<leader>ff', ':GFiles<cr>')
-vim.keymap.set('n', '<leader>fm', ':GFiles?<cr>')
-vim.keymap.set('n', '<leader>fb', ':Buffers<cr>')
-vim.keymap.set('n', '<leader>fg', ':Rg<cr>')
+vim.keymap.set('n', '<leader>fa', ':Files<cr>', { desc = 'Find in All Files' })
+vim.keymap.set('n', '<leader>ff', ':GFiles<cr>', { desc = 'Find in All Git Files' })
+vim.keymap.set('n', '<leader>fm', ':GFiles?<cr>', { desc = 'Find in Modified Git Files' })
+vim.keymap.set('n', '<leader>fb', ':Buffers<cr>', { desc = 'Find in Buffers' })
+vim.keymap.set('n', '<leader>fg', ':Rg<cr>', { desc = 'Find by file content' })
 
 -- cmake-tools
-vim.keymap.set('n', '<leader>cb', ':CMakeBuild<cr>')
-vim.keymap.set('n', '<leader>cB', ':CMakeBuild!<cr>')
-vim.keymap.set('n', '<leader>cc', ':CMakeClean<cr>')
-vim.keymap.set('n', '<leader>cd', ':CMakeDebug<cr>')
-vim.keymap.set('n', '<leader>cg', ':CMakeGenerate<cr>')
-vim.keymap.set('n', '<leader>cG', ':CMakeGenerate!<cr>')
-vim.keymap.set('n', '<leader>cr', ':CMakeRun<cr>')
-vim.keymap.set('n', '<leader>ct', ':CMakeSelectBuildType<cr>')
+vim.keymap.set('n', '<leader>cb', ':CMakeBuild<cr>', { desc = 'CMake - Build' })
+vim.keymap.set('n', '<leader>cB', ':CMakeBuild!<cr>', { desc = 'CMake - Rebuild' })
+vim.keymap.set('n', '<leader>cc', ':CMakeClean<cr>', { desc = 'CMake - Clean' })
+vim.keymap.set('n', '<leader>cd', ':CMakeDebug<cr>', { desc = 'CMake - Debug' })
+vim.keymap.set('n', '<leader>cg', ':CMakeGenerate<cr>', { desc = 'CMake - Generate' })
+vim.keymap.set('n', '<leader>cG', ':CMakeGenerate!<cr>', { desc = 'CMake - Regenerate' })
+vim.keymap.set('n', '<leader>cr', ':CMakeRun<cr>', { desc = 'CMake - Run' })
+vim.keymap.set('n', '<leader>ct', ':CMakeSelectBuildType<cr>', { desc = 'CMake - Select Build Type' })
 
 -- dap
-vim.keymap.set('n', '<leader>dr', ':DapContinue<cr>') -- r
-vim.keymap.set('n', '<leader>dc', ':DapContinue<cr>') -- c
-vim.keymap.set('n', '<leader>dn', ':DapStepOver<cr>') -- n, ni
-vim.keymap.set('n', '<leader>ds', ':DapStepInto<cr>') -- s, si
-vim.keymap.set('n', '<leader>do', ':DapStepOut<cr>') -- thread step-out
-vim.keymap.set('n', '<leader>db', ':DapToggleBreakpoint<cr>') -- b, br
+vim.keymap.set('n', '<leader>dr', ':DapContinue<cr>', { desc = 'Debugger - Run' }) -- r
+vim.keymap.set('n', '<leader>da', ':DapTerminate<cr>', { desc = 'Debugger - Terminate' }) 
+vim.keymap.set('n', '<leader>dc', ':DapContinue<cr>', { desc = 'Debugger - Continue' }) -- c
+vim.keymap.set('n', '<leader>dn', ':DapStepOver<cr>', { desc = 'Debugger - Stop Over' }) -- n, ni
+vim.keymap.set('n', '<leader>ds', ':DapStepInto<cr>', { desc = 'Debugger - Stop Into' }) -- s, si
+vim.keymap.set('n', '<leader>do', ':DapStepOut<cr>', { desc = 'Debugger - Step Out' }) -- thread step-out
+vim.keymap.set('n', '<leader>db', ':DapToggleBreakpoint<cr>', { desc = 'Debugger - Set Breakpoint' }) -- b, br
 
-vim.keymap.set('n', '<Meta-n>', ':DapStepOver<cr>') -- n, ni
-vim.keymap.set('n', '<Meta-i>', ':DapStepInto<cr>') -- s, si
-vim.keymap.set('n', '<Meta-o>', ':DapStepOut<cr>') -- thread step-out
+-- dap-ui
+vim.keymap.set('n', '<leader>di', ':lua require("dapui").eval(nil, { enter = true })<cr>', { desc = 'Debugger - Inspect Current Symbol' }) -- b, br
+vim.keymap.set('n', '<leader>dI', function()
+  local text = vim.fn.input('Symbol: ', '')
+  require('dapui').eval(text, { enter = true })
+end, { desc = 'Debugger - Inspect Symbol...' }) -- b, br
+
+vim.keymap.set('n', '<Meta-n>', ':DapStepOver<cr>', { desc = 'Debugger - Quick Step Over' }) -- n, ni
+vim.keymap.set('n', '<Meta-i>', ':DapStepInto<cr>', { desc = 'Debugger - Quick Step Into' }) -- s, si
+vim.keymap.set('n', '<Meta-o>', ':DapStepOut<cr>', { desc = 'Debugger - Quick Step Out' }) -- thread step-out
 
 -- To use the bundled libc++ please add the following LDFLAGS:
 -- LDFLAGS="-L/opt/homebrew/opt/llvm/lib/c++ -Wl,-rpath,/opt/homebrew/opt/llvm/lib/c++"
