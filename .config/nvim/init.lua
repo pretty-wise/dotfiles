@@ -1,9 +1,3 @@
--- TODO:
--- - dap
--- - dap with cmake-tools
--- - dap with neotest
--- - cmake-tools with lualine instead of nvim-notify
-
 -- disable netrw, use nvim-tree instead
 vim.g.loaded_netrw = 1
 vim.g.loaded_netrwPlugin = 1
@@ -34,6 +28,7 @@ vim.opt.hlsearch = false
 vim.opt.incsearch = true
 vim.opt.termguicolors = true
 vim.opt.scrolloff = 8
+
 -- vim.opt.colorcolumn = "80"
 
 require("lazy").setup(
@@ -50,7 +45,7 @@ require("lazy").setup(
         local configs = require("nvim-treesitter.configs")
 
         configs.setup({
-          ensure_installed = { "c", "cpp", "vim" },
+          ensure_installed = { "c", "cpp", "vim", "json" },
           sync_install = false,
           highlight = { enable = true },
           indent = { enable = true },  
@@ -112,7 +107,7 @@ require("lazy").setup(
     },
     { "jiangmiao/auto-pairs" },
     { "tpope/vim-surround" },
-    { "Civitasv/cmake-tools.nvim" },
+    -- { "Civitasv/cmake-tools.nvim" },
     { "rcarriga/nvim-notify" }, -- used by cmake-tools
     { 
       "nvim-lualine/lualine.nvim",
@@ -171,6 +166,39 @@ cmp.setup({
     ['<C-a>'] = cmp.mapping.abort(),
     ['<C-j>'] = cmp.mapping.select_prev_item({behavior = 'select'}),
     ['<C-k>'] = cmp.mapping.select_next_item({behavior = 'select'}),
+    ['<CR>'] = cmp.mapping(function(fallback)
+      if cmp.visible() then
+        if luasnip.expandable() then
+          luasnip.expand()
+        else
+          cmp.confirm({
+            select = true,
+          })
+        end
+      else
+        fallback()
+      end
+    end),
+
+    ["<Tab>"] = cmp.mapping(function(fallback)
+      if cmp.visible() then
+        cmp.select_next_item()
+      elseif luasnip.locally_jumpable(1) then
+        luasnip.jump(1)
+      else
+        fallback()
+      end
+    end, { "i", "s" }),
+
+    ["<S-Tab>"] = cmp.mapping(function(fallback)
+      if cmp.visible() then
+        cmp.select_prev_item()
+      elseif luasnip.locally_jumpable(-1) then
+        luasnip.jump(-1)
+      else
+        fallback()
+      end
+    end, { "i", "s" }),
   }),
 })
 
@@ -197,29 +225,19 @@ vim.api.nvim_create_autocmd("BufWritePre", {
   end,
 })
 
-require("cmake-tools").setup({
-  cmake_build_directory = "build/${variant:buildType}",
-  cmake_dap_configuration = {
-    name = 'cpp',
-    type = 'lldb',
-    request = 'launch',
-    stopOnEntry = false,
-    runInTerminal = true,
-    console = 'integratedTerminal',
-  },
-  cmake_executor = {
-    name = 'terminal',
-  },
-  cmake_runner = {
-    name = 'terminal',
-  }
-})
-
 require("lualine").setup()
 
 require("which-key").setup()
 
 require('gitsigns').setup{
+  attach_to_untracked = true,
+  current_line_blame = true,
+  current_line_blame_opts = {
+    delay = 350,
+  },
+  current_line_blame_formatter_opts = {
+    relative_time = true
+  },
   on_attach = function(bufnr)
     local gitsigns = require('gitsigns')
 
@@ -247,19 +265,19 @@ require('gitsigns').setup{
     end)
 
     -- Actions
-    map('n', '<leader>hs', gitsigns.stage_hunk, { desc = 'Git - stage hunk' })
-    map('n', '<leader>hr', gitsigns.reset_hunk, { desc = 'Git - reset hunk' })
-    map('v', '<leader>hs', function() gitsigns.stage_hunk {vim.fn.line('.'), vim.fn.line('v')} end, { desc = 'Git - stage hunk' })
-    map('v', '<leader>hr', function() gitsigns.reset_hunk {vim.fn.line('.'), vim.fn.line('v')} end, { desc = 'Git - reset hunk' })
-    map('n', '<leader>hS', gitsigns.stage_buffer, { desc = 'Git - stage buffer' })
-    map('n', '<leader>hu', gitsigns.undo_stage_hunk, { desc = 'Git - undo stage hunk' })
-    map('n', '<leader>hR', gitsigns.reset_buffer, { desc = 'Git - reset buffer' })
-    map('n', '<leader>hp', gitsigns.preview_hunk, { desc = 'Git - preview hunk' })
-    map('n', '<leader>hb', function() gitsigns.blame_line{full=true} end, { desc =  'Git - blame line' })
-    map('n', '<leader>htb', gitsigns.toggle_current_line_blame, { desc = 'Git - toggle current line blame' })
-    map('n', '<leader>hd', gitsigns.diffthis, { desc = 'Git - diff against index' })
-    map('n', '<leader>hD', function() gitsigns.diffthis('~') end, { desc = 'Git - diff against last commit' })
-    map('n', '<leader>htd', gitsigns.toggle_deleted)
+    map('n', '<leader>gs', gitsigns.stage_hunk, { desc = 'Git - stage hunk' })
+    map('n', '<leader>gr', gitsigns.reset_hunk, { desc = 'Git - reset hunk' })
+    map('v', '<leader>gs', function() gitsigns.stage_hunk {vim.fn.line('.'), vim.fn.line('v')} end, { desc = 'Git - stage hunk' })
+    map('v', '<leader>gr', function() gitsigns.reset_hunk {vim.fn.line('.'), vim.fn.line('v')} end, { desc = 'Git - reset hunk' })
+    map('n', '<leader>gS', gitsigns.stage_buffer, { desc = 'Git - stage buffer' })
+    map('n', '<leader>gu', gitsigns.undo_stage_hunk, { desc = 'Git - undo stage hunk' })
+    map('n', '<leader>gR', gitsigns.reset_buffer, { desc = 'Git - reset buffer' })
+    map('n', '<leader>gp', gitsigns.preview_hunk_inline, { desc = 'Git - preview hunk' })
+    map('n', '<leader>gb', function() gitsigns.blame_line{full=true} end, { desc =  'Git - blame line' })
+    map('n', '<leader>gtb', gitsigns.toggle_current_line_blame, { desc = 'Git - toggle current line blame' })
+    map('n', '<leader>gd', gitsigns.diffthis, { desc = 'Git - diff against index' })
+    map('n', '<leader>gD', function() gitsigns.diffthis('~') end, { desc = 'Git - diff against last commit' })
+    map('n', '<leader>gtd', gitsigns.toggle_deleted)
 
     -- Text object
     map({'o', 'x'}, 'ih', ':<C-U>Gitsigns select_hunk<CR>')
@@ -274,58 +292,49 @@ dap.adapters.lldb = {
   name = 'lldb',
 }
 
-dap.configurations.cpp = {
-  {
-    name = 'Launch',
-    type = 'lldb',
-    request = 'launch',
-    program = function() 
-      return vim.fn.input('Path to executable: ', vim.fn.getcwd() .. '/', 'file')
-    end,
-    cwd = '${workspaceFolder}',
-    stopOnEntry = true,
-    args = {},
-    runInTerminal = true,
-    env = function()
-      local variables = {}
-      for k, v in pairs(vim.fn.environ()) do
-        table.insert(variables, string.format("%s=%s", k, v))
-      end
-      return variables
-    end,
-  },
-  {
-    -- If you get an "Operation not permitted" error using this, try disabling YAMA:
-    --  echo 0 | sudo tee /proc/sys/kernel/yama/ptrace_scope
-    name = "Attach to process",
-    type = 'lldb',
-    request = 'attach',
-    pid = require('dap.utils').pick_process,
-    args = {},
-    env = function()
-      local variables = {}
-      for k, v in pairs(vim.fn.environ()) do
-        table.insert(variables, string.format("%s=%s", k, v))
-      end
-      return variables
-    end,
-    },
-}
-dap.configurations.c = dap.configurations.cpp
+-- load .vscode/launch.json
+require('dap.ext.vscode').load_launchjs(nil, { lldb = {'c', 'cpp'} })
 
 dapui.setup()
 
-dap.listeners.before.attach.dapui_config = function()
+local debug_win = nil
+local debug_tab = nil
+local debug_tabnr = nil
+
+local function open_in_tab()
+  if debug_win and vim.api.nvim_win_is_valid(debug_win) then
+    vim.api.nvim_set_current_win(debug_win)
+    return
+  end
+
+  vim.cmd('tabedit %')
+  debug_win = vim.fn.win_getid()
+  debug_tab = vim.api.nvim_win_get_tabpage(debug_win)
+  debug_tabnr = vim.api.nvim_tabpage_get_number(debug_tab)
+
   dapui.open()
 end
-dap.listeners.before.launch.dapui_config = function()
-  dapui.open()
-end
-dap.listeners.before.event_terminated.dapui_config = function()
+
+local function close_tab()
   dapui.close()
+
+  if debug_tab and vim.api.nvim_tabpage_is_valid(debug_tab) then
+    vim.api.nvim_exec('tabclose ' .. debug_tabnr, false)
+  end
+
+  debug_win = nil
+  debug_tab = nil
+  debug_tabnr = nil
 end
-dap.listeners.before.event_exited.dapui_config = function()
-  dapui.close()
+
+dap.listeners.after.event_initialized['dapui_config'] = function()
+  open_in_tab()
+end
+dap.listeners.before.event_terminated['dapui_config'] = function()
+  close_tab()
+end
+dap.listeners.before.event_exited['dapui_config'] = function()
+  close_tab()
 end
 
 vim.cmd.colorscheme('rose-pine-moon')
@@ -350,16 +359,6 @@ vim.keymap.set('n', '<leader>ff', ':GFiles<cr>', { desc = 'Find in All Git Files
 vim.keymap.set('n', '<leader>fm', ':GFiles?<cr>', { desc = 'Find in Modified Git Files' })
 vim.keymap.set('n', '<leader>fb', ':Buffers<cr>', { desc = 'Find in Buffers' })
 vim.keymap.set('n', '<leader>fg', ':Rg<cr>', { desc = 'Find by file content' })
-
--- cmake-tools
-vim.keymap.set('n', '<leader>cb', ':CMakeBuild<cr>', { desc = 'CMake - Build' })
-vim.keymap.set('n', '<leader>cB', ':CMakeBuild!<cr>', { desc = 'CMake - Rebuild' })
-vim.keymap.set('n', '<leader>cc', ':CMakeClean<cr>', { desc = 'CMake - Clean' })
-vim.keymap.set('n', '<leader>cd', ':CMakeDebug<cr>', { desc = 'CMake - Debug' })
-vim.keymap.set('n', '<leader>cg', ':CMakeGenerate<cr>', { desc = 'CMake - Generate' })
-vim.keymap.set('n', '<leader>cG', ':CMakeGenerate!<cr>', { desc = 'CMake - Regenerate' })
-vim.keymap.set('n', '<leader>cr', ':CMakeRun<cr>', { desc = 'CMake - Run' })
-vim.keymap.set('n', '<leader>ct', ':CMakeSelectBuildType<cr>', { desc = 'CMake - Select Build Type' })
 
 -- dap
 vim.keymap.set('n', '<leader>dr', ':DapContinue<cr>', { desc = 'Debugger - Run' }) -- r
@@ -397,3 +396,10 @@ vim.keymap.set('n', '<Meta-o>', ':DapStepOut<cr>', { desc = 'Debugger - Quick St
 --
 -- To use lldp-dap only run:
 -- ln -s $(brew --prefix)/opt/llvm/bin/lldb-dap $(brew --prefix)/bin/
+--
+
+vim.filetype.add({
+  extension = {
+    sf = 'json'
+  }
+})
