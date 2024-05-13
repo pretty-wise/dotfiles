@@ -34,10 +34,25 @@ vim.opt.scrolloff = 8
 require("lazy").setup(
   {
     { "nvim-tree/nvim-tree.lua" },
-    { "rose-pine/neovim", name = "rose-pine" },
+    { "rose-pine/neovim", name = "rose-pine", priority = 1000, 
+      config = function()
+        require("rose-pine").setup()
+      end
+    },
     { "catppuccin/nvim", name = "catppuccin", priority = 1000 },
+    {
+      "folke/tokyonight.nvim",
+      lazy = false,
+      priority = 1000,
+    },
     { "junegunn/fzf", name = "fzf", run = "./install --all" },
-    { "junegunn/fzf.vim" },
+    { "ibhagwan/fzf-lua",
+      -- optional for icon support
+      requires = { "nvim-tree/nvim-web-devicons" },
+      config = function()
+        require("fzf-lua").setup({ "fzf-vim" })
+      end
+    },
     {
       "nvim-treesitter/nvim-treesitter",
       build = ":TSUpdate",
@@ -117,6 +132,11 @@ require("lazy").setup(
     { "rcarriga/nvim-dap-ui", dependencies = {"mfussenegger/nvim-dap", "nvim-neotest/nvim-nio"} },
     { "lewis6991/gitsigns.nvim" },
     { "folke/which-key.nvim" },
+    {
+      "ThePrimeagen/harpoon",
+      branch = "harpoon2",
+      dependencies = { "nvim-lua/plenary.nvim" }
+    },
   }
 )
 
@@ -210,6 +230,7 @@ require('lspconfig').clangd.setup({
     -- lsp
     vim.keymap.set('n', 'gd', vim.lsp.buf.definition, { desc = 'Go to definition' })
     vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, { desc = 'Go to declaration' })
+    vim.keymap.set('n', 'gh', vim.lsp.buf.hover, { desc = 'Display declaration' })
     vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Diagnostics - previous' })
     vim.keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = 'Diagnostics - next' })
     vim.keymap.set('n', '<leader>rn', vim.lsp.buf.rename, { desc = 'Rename in buffer' })
@@ -219,7 +240,7 @@ require('lspconfig').clangd.setup({
 })
 
 vim.api.nvim_create_autocmd("BufWritePre", {
-  pattern = {"*.c", "*.cpp", "*.cc"},
+  pattern = {"*.c", "*.cpp", "*.cc", "*.h"},
   callback = function()
     vim.lsp.buf.format()
   end,
@@ -297,6 +318,7 @@ require('dap.ext.vscode').load_launchjs(nil, { lldb = {'c', 'cpp'} })
 
 dapui.setup()
 
+--dap ui setup
 local debug_win = nil
 local debug_tab = nil
 local debug_tabnr = nil
@@ -337,13 +359,29 @@ dap.listeners.before.event_exited['dapui_config'] = function()
   close_tab()
 end
 
-vim.cmd.colorscheme('rose-pine-moon')
+local harpoon = require("harpoon")
+harpoon:setup()
+
+vim.keymap.set("n", "<leader>a", function() harpoon:list():add() end)
+vim.keymap.set("n", "<C-e>", function() harpoon.ui:toggle_quick_menu(harpoon:list()) end)
+
+vim.keymap.set("n", "<M-h>", function() harpoon:list():select(1) end)
+vim.keymap.set("n", "<M-j>", function() harpoon:list():select(2) end)
+vim.keymap.set("n", "<M-k>", function() harpoon:list():select(3) end)
+vim.keymap.set("n", "<M-l>", function() harpoon:list():select(4) end)
+
+-- Toggle previous & next buffers stored within Harpoon list
+vim.keymap.set("n", "<M-i>", function() harpoon:list():prev() end)
+vim.keymap.set("n", "<M-o>", function() harpoon:list():next() end)
+
+vim.cmd('colorscheme rose-pine-moon')
 
 -- general
 vim.keymap.set('n', 'n', 'nzz')
 vim.keymap.set('n', 'N', 'Nzz')
 vim.keymap.set('n', 'H', '0')
 vim.keymap.set('n', 'L', '$')
+vim.keymap.set('v', '<leader>p', '"_dp')
 
 -- nvim-tree
 vim.keymap.set('n', '<leader>ee', ':NvimTreeToggle<cr>')
@@ -354,19 +392,25 @@ vim.keymap.set('n', '<leader>tr', function() require("neotest").run.run(vim.fn.g
 vim.keymap.set('n', '<leader>td', function() require("neotest").run.run({strategy = "dap"}) end, { desc = 'Test - Debug Current' })
 
 -- fzf
-vim.keymap.set('n', '<leader>fa', ':Files<cr>', { desc = 'Find in All Files' })
-vim.keymap.set('n', '<leader>ff', ':GFiles<cr>', { desc = 'Find in All Git Files' })
-vim.keymap.set('n', '<leader>fm', ':GFiles?<cr>', { desc = 'Find in Modified Git Files' })
-vim.keymap.set('n', '<leader>fb', ':Buffers<cr>', { desc = 'Find in Buffers' })
-vim.keymap.set('n', '<leader>fg', ':Rg<cr>', { desc = 'Find by file content' })
+vim.keymap.set('n', '<leader>fa', '<cmd>lua require("fzf-lua").files()<cr>', { desc = 'Find in All Files' })
+vim.keymap.set('n', '<leader>ff', '<cmd>lua require("fzf-lua").git_files()<cr>', { desc = 'Find in All Git Files' })
+vim.keymap.set('n', '<leader>fm', '<cmd>lua require("fzf-lua").git_status()<cr>', { desc = 'Find in Modified Git Files' })
+vim.keymap.set('n', '<leader>fb', '<cmd>lua require("fzf-lua").buffers()<cr>', { desc = 'Find in Buffers' })
+vim.keymap.set('n', '<leader>fg', '<cmd>lua require("fzf-lua").live_grep()<cr>', { desc = 'Find by file content' })
+vim.keymap.set('n', '<leader>fs', '<cmd>lua require("fzf-lua").lsp_document_symbols()<cr>', { desc = 'Find in buffer symbols' })
+vim.keymap.set('n', '<leader>fS', '<cmd>lua require("fzf-lua").lsp_live_workspace_symbols()<cr>', { desc = 'Find in all symbols' })
+vim.keymap.set('n', '<leader>fd', '<cmd>lua require("fzf-lua").lsp_workspace_diagnostics()<cr>', { desc = 'Find in all symbols' })
+vim.keymap.set('n', '<leader>fS', '<cmd>lua require("fzf-lua").dap_frames()<cr>', { desc = 'Find in stack frames (dap)' })
+vim.keymap.set('n', '<leader>fB', '<cmd>lua require("fzf-lua").dap_breakpoints()<cr>', { desc = 'Find in breakpoints (dap)' })
+vim.keymap.set('n', '<leader>fV', '<cmd>lua require("fzf-lua").dap_variables()<cr>', { desc = 'Find in variables(dap)' })
 
 -- dap
 vim.keymap.set('n', '<leader>dr', ':DapContinue<cr>', { desc = 'Debugger - Run' }) -- r
 vim.keymap.set('n', '<leader>da', ':DapTerminate<cr>', { desc = 'Debugger - Terminate' }) 
-vim.keymap.set('n', '<leader>dc', ':DapContinue<cr>', { desc = 'Debugger - Continue' }) -- c
-vim.keymap.set('n', '<leader>dn', ':DapStepOver<cr>', { desc = 'Debugger - Stop Over' }) -- n, ni
-vim.keymap.set('n', '<leader>ds', ':DapStepInto<cr>', { desc = 'Debugger - Stop Into' }) -- s, si
-vim.keymap.set('n', '<leader>do', ':DapStepOut<cr>', { desc = 'Debugger - Step Out' }) -- thread step-out
+vim.keymap.set('n', '<leader>dk', ':DapContinue<cr>', { desc = 'Debugger - Continue' }) -- c
+vim.keymap.set('n', '<leader>dj', ':DapStepOver<cr>', { desc = 'Debugger - Stop Over' }) -- n, ni
+vim.keymap.set('n', '<leader>dl', ':DapStepInto<cr>', { desc = 'Debugger - Stop Into' }) -- s, si
+vim.keymap.set('n', '<leader>dh', ':DapStepOut<cr>', { desc = 'Debugger - Step Out' }) -- thread step-out
 vim.keymap.set('n', '<leader>db', ':DapToggleBreakpoint<cr>', { desc = 'Debugger - Set Breakpoint' }) -- b, br
 
 -- dap-ui
