@@ -137,6 +137,17 @@ require("lazy").setup(
       branch = "harpoon2",
       dependencies = { "nvim-lua/plenary.nvim" }
     },
+    {
+      "tpope/vim-fugitive" 
+    },
+    {
+      "j-hui/fidget.nvim",
+      opts = {
+      },
+      config = function()
+        require('fidget').setup()
+      end
+    }
   }
 )
 
@@ -230,12 +241,13 @@ require('lspconfig').clangd.setup({
     -- lsp
     vim.keymap.set('n', 'gd', vim.lsp.buf.definition, { desc = 'Go to definition' })
     vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, { desc = 'Go to declaration' })
-    vim.keymap.set('n', 'gh', vim.lsp.buf.hover, { desc = 'Display declaration' })
+    vim.keymap.set('n', 'gi', vim.lsp.buf.hover, { desc = 'Display declaration' })
     vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Diagnostics - previous' })
     vim.keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = 'Diagnostics - next' })
     vim.keymap.set('n', '<leader>rn', vim.lsp.buf.rename, { desc = 'Rename in buffer' })
     vim.keymap.set('n', '<leader>ca', vim.lsp.buf.code_action, { desc = 'Buffer code action' })
     vim.keymap.set('n', '<leader>f', vim.lsp.buf.format, { desc = 'Format buffer' })
+    vim.keymap.set('n', 'gh', '<cmd>ClangdSwitchSourceHeader<cr>', { desc = 'Switch between source and header' })
   end
 })
 
@@ -382,6 +394,10 @@ vim.keymap.set('n', 'N', 'Nzz')
 vim.keymap.set('n', 'H', '0')
 vim.keymap.set('n', 'L', '$')
 vim.keymap.set('v', '<leader>p', '"_dp')
+vim.keymap.set('n', '<M-,>', '<c-w>5<')
+vim.keymap.set('n', '<M-.>', '<c-w>5>')
+vim.keymap.set('n', '<M-u>', '<C-W>+5')
+vim.keymap.set('n', '<M-d>', '<C-W>-5')
 
 -- nvim-tree
 vim.keymap.set('n', '<leader>ee', ':NvimTreeToggle<cr>')
@@ -407,10 +423,10 @@ vim.keymap.set('n', '<leader>fV', '<cmd>lua require("fzf-lua").dap_variables()<c
 -- dap
 vim.keymap.set('n', '<leader>dr', ':DapContinue<cr>', { desc = 'Debugger - Run' }) -- r
 vim.keymap.set('n', '<leader>da', ':DapTerminate<cr>', { desc = 'Debugger - Terminate' }) 
-vim.keymap.set('n', '<leader>dk', ':DapContinue<cr>', { desc = 'Debugger - Continue' }) -- c
-vim.keymap.set('n', '<leader>dj', ':DapStepOver<cr>', { desc = 'Debugger - Stop Over' }) -- n, ni
-vim.keymap.set('n', '<leader>dl', ':DapStepInto<cr>', { desc = 'Debugger - Stop Into' }) -- s, si
-vim.keymap.set('n', '<leader>dh', ':DapStepOut<cr>', { desc = 'Debugger - Step Out' }) -- thread step-out
+vim.keymap.set('n', '<F5>', ':DapContinue<cr>', { desc = 'Debugger - Continue' }) -- c
+vim.keymap.set('n', '<F10>', ':DapStepOver<cr>', { desc = 'Debugger - Stop Over' }) -- n, ni
+vim.keymap.set('n', '<F11>', ':DapStepInto<cr>', { desc = 'Debugger - Stop Into' }) -- s, si
+vim.keymap.set('n', '<S-F11>', ':DapStepOut<cr>', { desc = 'Debugger - Step Out' }) -- thread step-out
 vim.keymap.set('n', '<leader>db', ':DapToggleBreakpoint<cr>', { desc = 'Debugger - Set Breakpoint' }) -- b, br
 
 -- dap-ui
