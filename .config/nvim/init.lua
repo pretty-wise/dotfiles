@@ -126,6 +126,16 @@ require('lspconfig').clangd.setup({
   end
 })
 
+require('lspconfig').rust_analyzer.setup({
+  settings = {
+    ['rust-analyzer'] = {
+      diagnostics = {
+        enable = true;
+      }
+    }
+  }
+})
+
 vim.api.nvim_create_autocmd("BufWritePre", {
   pattern = {"*.c", "*.cpp", "*.cc", "*.h"},
   callback = function()
