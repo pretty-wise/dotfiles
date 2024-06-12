@@ -100,7 +100,11 @@ return {
   { 
     "nvim-lualine/lualine.nvim",
     dependencies = { "nvim-tree/nvim-web-devicons" },
-    opts = {},
+    opts = {
+      options = {
+        theme = 'rose-pine'
+      }
+    },
   },
   {
     "ThePrimeagen/harpoon",
