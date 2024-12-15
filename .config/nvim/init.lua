@@ -1,7 +1,7 @@
 -- disable netrw, use nvim-tree instead
 vim.g.loaded_netrw = 1
 vim.g.loaded_netrwPlugin = 1
-vim.g.mapleader = "," -- Make sure to set `mapleader` before lazy so your mappings are correct
+vim.g.mapleader = " " -- Make sure to set `mapleader` before lazy so your mappings are correct
 
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not (vim.uv or vim.loop).fs_stat(lazypath) then
@@ -133,7 +133,19 @@ require('lspconfig').rust_analyzer.setup({
         enable = true;
       }
     }
-  }
+  },
+  on_attach = function(client, bufnr)
+    -- lsp
+    vim.keymap.set('n', 'gd', vim.lsp.buf.definition, { desc = 'Go to definition' })
+    vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, { desc = 'Go to declaration' })
+    vim.keymap.set('n', 'gi', vim.lsp.buf.hover, { desc = 'Display declaration' })
+    vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Diagnostics - previous' })
+    vim.keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = 'Diagnostics - next' })
+    vim.keymap.set('n', '<leader>rn', vim.lsp.buf.rename, { desc = 'Rename in buffer' })
+    vim.keymap.set('n', '<leader>ca', vim.lsp.buf.code_action, { desc = 'Buffer code action' })
+    vim.keymap.set('n', '<leader>f', vim.lsp.buf.format, { desc = 'Format buffer' })
+    vim.keymap.set('n', 'gh', '<cmd>ClangdSwitchSourceHeader<cr>', { desc = 'Switch between source and header' })
+  end
 })
 
 vim.api.nvim_create_autocmd("BufWritePre", {
@@ -143,7 +155,7 @@ vim.api.nvim_create_autocmd("BufWritePre", {
   end,
 })
 
-vim.cmd('colorscheme rose-pine-moon')
+vim.cmd('colorscheme catppuccin-mocha')
 
 -- general
 vim.keymap.set('n', 'n', 'nzz')

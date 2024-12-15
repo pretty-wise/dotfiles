@@ -12,7 +12,7 @@ return {
   { "junegunn/fzf", name = "fzf", run = "./install --all" },
   { "ibhagwan/fzf-lua",
     requires = { "nvim-tree/nvim-web-devicons" },
-    opts = { "fzf-vim" },
+    opts = { "telescope" },
     keys = {
       { '<leader>fa', '<cmd>lua require("fzf-lua").files()<cr>', desc = 'Find in All Files' },
       { '<leader>ff', '<cmd>lua require("fzf-lua").git_files()<cr>', desc = 'Find in All Git Files' },
@@ -31,7 +31,7 @@ return {
     "nvim-treesitter/nvim-treesitter",
     build = ":TSUpdate",
     opts = {
-      ensure_installed = { "c", "cpp", "vim", "json" },
+      ensure_installed = { "c", "cpp", "vim", "json", "ledger" },
       sync_install = false,
       highlight = { enable = true },
       indent = { enable = true },  
